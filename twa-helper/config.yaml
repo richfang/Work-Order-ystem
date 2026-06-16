@@ -1,45 +1,58 @@
-# 全战觉醒挂机助手 配置文件
-# 所有坐标/阈值都可以按你自己的模拟器分辨率调整
+# 小程序游戏挂机助手 配置文件
+# 支持多游戏(profile)。单机先跑通，以后多设备/管理系统直接复用本配置。
 
 device:
   # ADB 设备序列号。模拟器常见地址：
   #   雷电: emulator-5554 或 127.0.0.1:5555
   #   MuMu: 127.0.0.1:7555
   #   夜神: 127.0.0.1:62001
-  # 留空 ("") 则自动使用 adb devices 里第一个设备
+  # 留空 ("") 则自动使用 adb devices 里第一个设备。
+  # 也可在命令行用 --serial 覆盖（多开时按台指定）。
   serial: ""
-  # adb 可执行文件路径，已加入 PATH 时填 "adb" 即可
   adb_path: "adb"
 
 vision:
   # 模板匹配相似度阈值 (0~1)，越高越严格。一般 0.8 起调
   threshold: 0.85
-  # 模板图所在目录（相对项目根）
-  template_dir: "templates"
+  # 模板根目录；每个游戏的模板放在 templates/<游戏名>/ 下
+  template_root: "templates"
 
 loop:
-  # 每一轮主循环之间的等待秒数
-  interval: 2.0
-  # 找图失败时的重试次数
-  max_retries: 3
-  # 找不到任何可处理状态时的最大空转次数，超过则判定卡死并告警
-  idle_limit: 30
+  interval: 2.0        # 每轮主循环间隔秒
+  max_retries: 3       # 找图失败重试
+  idle_limit: 30       # 连续空转多少次判定卡死并告警
 
-# 要启用的任务，按顺序执行（任务名对应 src/tasks/ 下的模块）
-tasks:
-  - daily_login      # 每日登录 / 领取奖励
-  - auto_battle      # 自动战斗 / 扫荡
-  - collect_resource # 收资源
+notify:
+  enabled: false       # 卡死/出错时推送通知（无人值守挂机很有用）
+  type: "webhook"      # webhook(企业微信/钉钉机器人) / serverchan(Server酱)
+  url: ""              # 机器人 Webhook 地址 或 Server酱 SendKey URL
+  on: ["stuck", "error"]   # 触发推送的事件
 
-# 各任务的独立参数
-task_options:
-  auto_battle:
-    repeat: 10        # 自动战斗次数
-  collect_resource:
-    enabled: true
+# 当前要跑的游戏（也可命令行 --game 覆盖）
+active_game: "英雄铁魂"
+
+# 各游戏的独立配置；模板目录默认 templates/<游戏名>/
+games:
+  英雄铁魂:
+    tasks:
+      - daily_login
+      - auto_battle
+      - collect_resource
+    task_options:
+      auto_battle:
+        repeat: 10
+      collect_resource:
+        enabled: true
+
+  奇光霸业:
+    tasks:
+      - daily_login
+      - collect_resource
+    task_options:
+      collect_resource:
+        enabled: true
 
 log:
-  level: "INFO"       # DEBUG / INFO / WARNING / ERROR
+  level: "INFO"        # DEBUG / INFO / WARNING / ERROR
   dir: "logs"
-  # 是否在每次找图时保存调试截图（排查识别问题时打开）
   save_debug_shots: false

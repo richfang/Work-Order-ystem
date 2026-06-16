@@ -5,6 +5,7 @@ from typing import Optional
 
 from .adb import ADB
 from .vision import Vision, Match
+from .notify import Notifier
 
 log = logging.getLogger("twa")
 
@@ -12,11 +13,16 @@ log = logging.getLogger("twa")
 class Bot:
     """任务可以调用的统一上下文。封装"找到就点"这类常用动作。"""
 
-    def __init__(self, adb: ADB, vision: Vision, config: dict):
+    def __init__(self, adb: ADB, vision: Vision, config: dict,
+                 notifier: Optional[Notifier] = None):
         self.adb = adb
         self.vision = vision
         self.config = config
         self.loop_cfg = config.get("loop", {})
+        self.notifier = notifier or Notifier({})
+
+    def notify(self, event: str, text: str) -> None:
+        self.notifier.send(event, text)
 
     # ---------- 截图 ----------
     def screen(self):
