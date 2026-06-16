@@ -40,15 +40,43 @@ games:
 
     task_options:
       auto_grind:
-        maps: ["map_1", "map_2"]            # 地图入口模板，轮换刷
-        boss_priority: ["boss_1", "boss_2"] # boss 优先级(先打谁)
-        monsters: ["monster"]               # 普通怪
-        revive: ["revive_btn"]              # 死亡复活
-        pick_loot: true
-        loot_btn: "pickup"
-        no_target_limit: 8                  # 连续无怪轮数 -> 换图
-        round_wait: 1.5
-        max_rounds: 200                     # 刷够轮数让位给其它任务
+        open_grind_btn: "grind_map_btn"     # 打开挂机/传送地图面板
+        maps: ["map_1", "map_2", "map_3"]   # 左侧地图列表项(从模拟器裁图)
+        enter_btn: "enter_map_btn"          # 红色「进入」
+        revive: ["revive_btn"]              # 死亡复活弹窗
+        cleared_flag: "map_cleared"         # (可选)清图标志，提前换图
+        dwell_seconds: 600                  # 每图挂 10 分钟换
+        check_interval: 10
+        max_switches: 6                     # 换 6 次图后让位给其它任务
+
+      daily_activities:
+        # 每个活动：从总地图(world_map_btn)进入 -> 点该活动 -> 开始 -> 领奖
+        # 入口找不到=没开放/次数用完，自动跳过。按你游戏补全模板名。
+        activities:
+          - name: "远古荒原"
+            entry: ["world_map_btn", "act_yuangu"]
+            start: "enter_map_btn"
+            claim: "claim_btn"
+          - name: "狂暴战场"
+            entry: ["world_map_btn", "act_kuangbao"]
+            start: "challenge_btn"     # 前往挑战
+            claim: "claim_btn"
+          - name: "比武大会"
+            entry: ["world_map_btn", "act_biwu"]
+            start: "match_btn"         # 匹配对手
+            claim: "claim_btn"
+          - name: "天空之城"
+            entry: ["world_map_btn", "act_tiankong"]
+            start: "onekey_btn"        # 一键挑战
+            claim: "claim_btn"
+          - name: "禁地福利"
+            entry: ["world_map_btn", "act_jindi"]
+            start: "challenge_btn"
+            claim: "claim_btn"
+          - name: "万妖牢狱"
+            entry: ["world_map_btn", "act_wanyao"]
+            start: "enter_map_btn"
+            claim: "claim_btn"
 
       auto_craft:
         open_btns: ["bag_btn", "craft_btn"]
@@ -62,18 +90,6 @@ games:
         recycle_btn: "recycle"
         confirm_btn: "confirm"
         back_city: false
-
-      daily_activities:
-        # 每个活动：入口序列 -> 开始 -> (等结算) -> 领奖。入口找不到=没开放，自动跳过。
-        activities:
-          - name: "比武大会"
-            entry: ["activity_btn", "biwu_btn"]
-            start: "biwu_start"
-            claim: "claim_btn"
-          - name: "称霸天下"
-            entry: ["activity_btn", "czts_btn"]
-            claim: "claim_btn"
-          # 按需继续加：服战 / 界海探秘 / 神坛 / 跨服沙巴克 ...
 
       relog_guard:
         samples: 4
