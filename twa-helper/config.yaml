@@ -1,0 +1,45 @@
+# 全战觉醒挂机助手 配置文件
+# 所有坐标/阈值都可以按你自己的模拟器分辨率调整
+
+device:
+  # ADB 设备序列号。模拟器常见地址：
+  #   雷电: emulator-5554 或 127.0.0.1:5555
+  #   MuMu: 127.0.0.1:7555
+  #   夜神: 127.0.0.1:62001
+  # 留空 ("") 则自动使用 adb devices 里第一个设备
+  serial: ""
+  # adb 可执行文件路径，已加入 PATH 时填 "adb" 即可
+  adb_path: "adb"
+
+vision:
+  # 模板匹配相似度阈值 (0~1)，越高越严格。一般 0.8 起调
+  threshold: 0.85
+  # 模板图所在目录（相对项目根）
+  template_dir: "templates"
+
+loop:
+  # 每一轮主循环之间的等待秒数
+  interval: 2.0
+  # 找图失败时的重试次数
+  max_retries: 3
+  # 找不到任何可处理状态时的最大空转次数，超过则判定卡死并告警
+  idle_limit: 30
+
+# 要启用的任务，按顺序执行（任务名对应 src/tasks/ 下的模块）
+tasks:
+  - daily_login      # 每日登录 / 领取奖励
+  - auto_battle      # 自动战斗 / 扫荡
+  - collect_resource # 收资源
+
+# 各任务的独立参数
+task_options:
+  auto_battle:
+    repeat: 10        # 自动战斗次数
+  collect_resource:
+    enabled: true
+
+log:
+  level: "INFO"       # DEBUG / INFO / WARNING / ERROR
+  dir: "logs"
+  # 是否在每次找图时保存调试截图（排查识别问题时打开）
+  save_debug_shots: false

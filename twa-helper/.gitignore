@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# 运行产物
+logs/
+*.log
+full.png
+shot*.png
+
+# 模板图是你私有的截图，默认不入库（如需共享可删掉下面这行）
+templates/*.png
