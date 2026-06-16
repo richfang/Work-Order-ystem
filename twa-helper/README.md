@@ -1,8 +1,10 @@
 # 小程序游戏挂机助手 (twa-helper)
 
-一个基于 **ADB + OpenCV 找图** 的微信小程序游戏自动化脚本框架，**支持多游戏**
-（目前内置《英雄铁魂》《奇光霸业》两个 profile，可自行增加）。
+一个基于 **ADB + OpenCV 找图** 的微信小程序**传奇类游戏**自动化脚本框架。
+全战觉醒 / 英雄铁魂 / 奇光霸业 / 龙迹之城 等都是同一套换皮，UI 几乎一致，**默认共用一套模板**。
 原理是"模拟人手点屏幕"：截屏 → 识别按钮 → 模拟点击，**不破解游戏、不抓包、不绕反作弊、不连任何第三方服务器**。
+
+> 任务架构（开局→刷图→产出→活动→保活）参考了同类成熟脚本的功能设计，详见 `docs/架构与功能参考.md`。
 
 > ⚠️ **风险提醒**：自动挂机/模拟操作通常**违反微信及游戏用户协议**，存在**封号风险**。
 > 请使用你能接受损失的账号，自行承担风险。本项目仅供学习自动化技术之用。
@@ -38,16 +40,16 @@ python main.py --devices
 # 2. 一键体检：检查 adb / 设备 / 截图 / 模板是否就绪
 python main.py doctor
 
-# 3. 选好游戏，进到目标画面，抓图用来裁模板
-python main.py --game 英雄铁魂 --shot full.png
+# 3. 进到目标画面，抓图用来裁模板
+python main.py --shot full.png
 
-# 4. 把按钮裁成小图放进 templates/英雄铁魂/（命名见 templates/README.md）
+# 4. 把按钮裁成小图放进 templates/传奇通用/（清单见该目录 README.md）
 
-# 5. 跑一轮当前游戏的所有任务
-python main.py --game 英雄铁魂
+# 5. 跑一轮所有任务（缺模板的任务会自动跳过）
+python main.py
 
 # 6. 持续挂机（Ctrl+C 退出）
-python main.py --game 英雄铁魂 --loop
+python main.py --loop
 
 # 只跑某个任务 / 指定某台设备(多开)
 python main.py --once daily_login
@@ -89,14 +91,18 @@ twa-helper/
 │   ├── bot.py           # 高层动作：wait_for / tap_template ...
 │   ├── notify.py        # 卡死/出错推送通知
 │   ├── logger.py
-│   └── tasks/           # 任务模块（可自行增减）
-│       ├── __init__.py        # 任务注册表
-│       ├── daily_login.py     # 每日奖励
-│       ├── auto_battle.py     # 自动战斗
-│       └── collect_resource.py# 收资源
-├── templates/           # 按游戏分目录的按钮模板图
-│   ├── 英雄铁魂/
-│   └── 奇光霸业/
+│   └── tasks/           # 任务模块（传奇类挂机分层，可自行增减）
+│       ├── __init__.py          # 任务注册表
+│       ├── startup.py           # 开局：选角/关弹窗/进主城
+│       ├── auto_grind.py        # 核心刷图：boss优先级/打怪/复活/捡装/换图
+│       ├── auto_craft.py        # 自动合成/锻造
+│       ├── stall_recycle.py     # 背包回收/回仓
+│       ├── daily_activities.py  # 日常活动(数据驱动)
+│       └── relog_guard.py       # 卡死检测/定时重启保活
+├── templates/           # 按钮模板图（换皮游戏共用 传奇通用/）
+│   └── 传奇通用/
+├── docs/
+│   └── 架构与功能参考.md
 └── logs/
 ```
 

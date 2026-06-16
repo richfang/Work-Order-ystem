@@ -1,7 +1,7 @@
 """主控制器：把 ADB / Vision / 任务串起来，提供给任务用的高层操作。"""
 import logging
 import time
-from typing import Optional
+from typing import List, Optional, Sequence
 
 from .adb import ADB
 from .vision import Vision, Match
@@ -67,3 +67,39 @@ class Bot:
         self.adb.tap(x, y)
         if wait_after:
             self.adb.sleep(wait_after)
+
+    def swipe(self, x1, y1, x2, y2, duration_ms: int = 300, wait_after: float = 0.5):
+        self.adb.swipe(x1, y1, x2, y2, duration_ms)
+        if wait_after:
+            self.adb.sleep(wait_after)
+
+    # ---------- 多目标(优先级)匹配：传奇刷图打 boss 必备 ----------
+    def find_any(self, templates: Sequence[str],
+                 threshold: Optional[float] = None) -> Optional[Match]:
+        """按列表顺序找，返回第一个命中的(即"优先级")。一次截图比对全部，省时。"""
+        screen = self.screen()
+        for name in templates:
+            try:
+                m = self.vision.find(screen, name, threshold)
+            except FileNotFoundError:
+                log.debug("模板缺失，跳过: %s", name)
+                continue
+            if m:
+                return m
+        return None
+
+    def tap_any(self, templates: Sequence[str], threshold: Optional[float] = None,
+                wait_after: float = 1.0) -> Optional[str]:
+        """按优先级找到并点击，返回命中的模板名(没命中返回 None)。"""
+        m = self.find_any(templates, threshold)
+        if not m:
+            return None
+        self.adb.tap(m.x, m.y)
+        log.info("点击 %s (score=%.2f)", m.name, m.score)
+        if wait_after:
+            self.adb.sleep(wait_after)
+        return m.name
+
+    def exists_any(self, templates: Sequence[str],
+                   threshold: Optional[float] = None) -> bool:
+        return self.find_any(templates, threshold) is not None

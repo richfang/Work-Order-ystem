@@ -93,5 +93,14 @@ class ADB:
     def back(self) -> None:
         self._run(["shell", "input", "keyevent", "4"])
 
+    def app_stop(self, package: str) -> None:
+        log.info("强停应用: %s", package)
+        self._run(["shell", "am", "force-stop", package])
+
+    def app_start(self, package: str) -> None:
+        log.info("启动应用: %s", package)
+        self._run(["shell", "monkey", "-p", package,
+                   "-c", "android.intent.category.LAUNCHER", "1"])
+
     def sleep(self, seconds: float) -> None:
         time.sleep(seconds)

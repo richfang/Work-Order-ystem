@@ -43,7 +43,13 @@ def resolve_game(cfg: dict, game: str = None) -> tuple:
     return name, games[name] or {}
 
 
-def build_bot(cfg: dict, game_name: str, serial: str = None) -> Bot:
+def template_dir_for(cfg: dict, game_name: str, profile: dict) -> str:
+    """模板目录：profile 指定了 template_dir 就用它(换皮游戏可共用)，否则按游戏名。"""
+    root = cfg.get("vision", {}).get("template_root", "templates")
+    return os.path.join(root, profile.get("template_dir", game_name))
+
+
+def build_bot(cfg: dict, game_name: str, profile: dict, serial: str = None) -> Bot:
     dev = cfg.get("device", {})
     adb = ADB(
         adb_path=dev.get("adb_path", "adb"),
@@ -52,7 +58,7 @@ def build_bot(cfg: dict, game_name: str, serial: str = None) -> Bot:
 
     vcfg = cfg.get("vision", {})
     lcfg = cfg.get("log", {})
-    template_dir = os.path.join(vcfg.get("template_root", "templates"), game_name)
+    template_dir = template_dir_for(cfg, game_name, profile)
     vision = Vision(
         template_dir=template_dir,
         threshold=vcfg.get("threshold", 0.85),
@@ -82,7 +88,7 @@ def log_warn(msg: str):
     logging.getLogger("twa").warning(msg)
 
 
-def cmd_doctor(cfg: dict, game_name: str, serial: str) -> None:
+def cmd_doctor(cfg: dict, game_name: str, profile: dict, serial: str) -> None:
     import logging
     log = logging.getLogger("twa")
     ok = True
@@ -108,7 +114,7 @@ def cmd_doctor(cfg: dict, game_name: str, serial: str) -> None:
         ok = False
 
     # 3. 模板目录与数量
-    tdir = os.path.join(cfg.get("vision", {}).get("template_root", "templates"), game_name)
+    tdir = template_dir_for(cfg, game_name, profile)
     if os.path.isdir(tdir):
         pngs = [f for f in os.listdir(tdir) if f.lower().endswith(".png")]
         if pngs:
@@ -157,15 +163,16 @@ def main():
         log.info("当前游戏: %s", game_name)
 
         if args.command == "doctor":
-            cmd_doctor(cfg, game_name, args.serial)
+            cmd_doctor(cfg, game_name, profile, args.serial)
             return
 
-        bot = build_bot(cfg, game_name, args.serial)
+        bot = build_bot(cfg, game_name, profile, args.serial)
 
         if args.shot:
             import cv2
             cv2.imwrite(args.shot, bot.screen())
-            log.info("已保存截图到 %s（裁出按钮放进 templates/%s/）", args.shot, game_name)
+            log.info("已保存截图到 %s（裁出按钮放进 %s/）",
+                     args.shot, template_dir_for(cfg, game_name, profile))
             return
 
         if args.loop:
